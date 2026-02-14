@@ -4,6 +4,7 @@ export interface NoteBlock {
   content: string; // text content or URL/data
   fileName?: string;
   mimeType?: string;
+  caption?: string;
 }
 
 export interface Note {

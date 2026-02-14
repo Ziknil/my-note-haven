@@ -22,6 +22,7 @@ interface NotesState {
   // Blocks
   addBlock: (noteId: string, block: Omit<NoteBlock, 'id'>) => void;
   updateBlock: (noteId: string, blockId: string, content: string) => void;
+  updateBlockCaption: (noteId: string, blockId: string, caption: string) => void;
   deleteBlock: (noteId: string, blockId: string) => void;
 }
 
@@ -120,6 +121,19 @@ export const useNotesStore = create<NotesState>()(
           notes: s.notes.map((n) =>
             n.id === noteId
               ? { ...n, blocks: n.blocks.filter((b) => b.id !== blockId), updatedAt: Date.now() }
+              : n
+          ),
+        })),
+
+      updateBlockCaption: (noteId, blockId, caption) =>
+        set((s) => ({
+          notes: s.notes.map((n) =>
+            n.id === noteId
+              ? {
+                  ...n,
+                  blocks: n.blocks.map((b) => (b.id === blockId ? { ...b, caption } : b)),
+                  updatedAt: Date.now(),
+                }
               : n
           ),
         })),

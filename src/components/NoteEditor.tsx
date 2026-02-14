@@ -1,7 +1,35 @@
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 import { useNotesStore } from '@/store/useNotesStore';
 import { NoteBlock } from '@/types/notes';
-import { Hash, Plus, FileText, Trash2, Type } from 'lucide-react';
+import { Hash, Plus, FileText, Trash2, Type, MessageSquarePlus } from 'lucide-react';
+
+function CaptionInput({ noteId, block }: { noteId: string; block: NoteBlock }) {
+  const { updateBlockCaption } = useNotesStore();
+  const [showCaption, setShowCaption] = React.useState(!!block.caption);
+
+  if (!showCaption && !block.caption) {
+    return (
+      <button
+        onClick={() => setShowCaption(true)}
+        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-4 py-1.5"
+      >
+        <MessageSquarePlus className="w-3.5 h-3.5" /> Ajouter une légende
+      </button>
+    );
+  }
+
+  return (
+    <textarea
+      className="w-full bg-transparent text-sm text-muted-foreground px-4 py-2 resize-none outline-none border-t border-border/30 placeholder:text-muted-foreground/50 min-h-[36px]"
+      value={block.caption || ''}
+      onChange={(e) => updateBlockCaption(noteId, block.id, e.target.value)}
+      placeholder="Ajoutez une légende..."
+      rows={1}
+    />
+  );
+}
+
+
 
 function BlockRenderer({ noteId, block }: { noteId: string; block: NoteBlock }) {
   const { updateBlock, deleteBlock } = useNotesStore();
@@ -31,6 +59,7 @@ function BlockRenderer({ noteId, block }: { noteId: string; block: NoteBlock }) 
       <div className="group relative rounded-lg overflow-hidden bg-card">
         <img src={block.content} alt={block.fileName || 'image'} className="max-w-full max-h-[500px] object-contain mx-auto" />
         {block.fileName && <p className="text-xs text-muted-foreground px-4 py-2 font-medium">{block.fileName}</p>}
+        <CaptionInput noteId={noteId} block={block} />
         <button
           className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-background/80 backdrop-blur rounded-full p-1.5 text-muted-foreground hover:text-destructive transition-all"
           onClick={() => deleteBlock(noteId, block.id)}
@@ -46,6 +75,7 @@ function BlockRenderer({ noteId, block }: { noteId: string; block: NoteBlock }) 
       <div className="group relative rounded-lg overflow-hidden bg-card">
         <video src={block.content} controls className="max-w-full max-h-[400px] mx-auto" />
         {block.fileName && <p className="text-xs text-muted-foreground px-4 py-2 font-medium">{block.fileName}</p>}
+        <CaptionInput noteId={noteId} block={block} />
         <button
           className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-background/80 backdrop-blur rounded-full p-1.5 text-muted-foreground hover:text-destructive transition-all"
           onClick={() => deleteBlock(noteId, block.id)}
@@ -57,23 +87,26 @@ function BlockRenderer({ noteId, block }: { noteId: string; block: NoteBlock }) 
   }
 
   return (
-    <div className="group relative flex items-center gap-3 p-4 rounded-lg bg-card hover:bg-card/80 transition-colors">
-      <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-        <FileText className="w-5 h-5 text-primary" />
+    <div className="group relative rounded-lg bg-card hover:bg-card/80 transition-colors overflow-hidden">
+      <div className="flex items-center gap-3 p-4">
+        <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+          <FileText className="w-5 h-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold truncate">{block.fileName || 'fichier'}</p>
+          <p className="text-xs text-muted-foreground">{block.mimeType || 'unknown'}</p>
+        </div>
+        <a href={block.content} download={block.fileName} className="text-primary text-xs font-semibold hover:underline shrink-0">
+          Télécharger
+        </a>
+        <button
+          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all p-1 rounded-full"
+          onClick={() => deleteBlock(noteId, block.id)}
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold truncate">{block.fileName || 'fichier'}</p>
-        <p className="text-xs text-muted-foreground">{block.mimeType || 'unknown'}</p>
-      </div>
-      <a href={block.content} download={block.fileName} className="text-primary text-xs font-semibold hover:underline shrink-0">
-        Télécharger
-      </a>
-      <button
-        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all p-1 rounded-full"
-        onClick={() => deleteBlock(noteId, block.id)}
-      >
-        <Trash2 className="w-3.5 h-3.5" />
-      </button>
+      <CaptionInput noteId={noteId} block={block} />
     </div>
   );
 }
